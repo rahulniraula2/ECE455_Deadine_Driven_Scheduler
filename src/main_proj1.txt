@@ -1,0 +1,278 @@
+/*
+http://www.FreeRTOS.org
+
+
+The main() Function:
+main() creates the tasks and software timers described in this section, before
+starting the scheduler.
+
+The Queue Send Task:
+The queue send task is implemented by the prvQueueSendTask() function.
+The task uses the FreeRTOS vTaskDelayUntil() and xQueueSend() API functions to
+periodically send the number 100 on a queue.  The period is set to 200ms.  See
+the comments in the function for more details.
+http://www.freertos.org/vtaskdelayuntil.html
+http://www.freertos.org/a00117.html
+
+The Queue Receive Task:
+The queue receive task is implemented by the prvQueueReceiveTask() function.
+The task uses the FreeRTOS xQueueReceive() API function to receive values from
+a queue.  The values received are those sent by the queue send task.  The queue
+receive task increments the ulCountOfItemsReceivedOnQueue variable each time it
+receives the value 100.  Therefore, as values are sent to the queue every 200ms,
+the value of ulCountOfItemsReceivedOnQueue will increase by 5 every second.
+http://www.freertos.org/a00118.html
+
+An example software timer:
+A software timer is created with an auto reloading period of 1000ms.  The
+timer's callback function increments the ulCountOfTimerCallbackExecutions
+variable each time it is called.  Therefore the value of
+ulCountOfTimerCallbackExecutions will count seconds.
+http://www.freertos.org/RTOS-software-timer.html
+
+The FreeRTOS RTOS tick hook (or callback) function:
+The tick hook function executes in the context of the FreeRTOS tick interrupt.
+The function 'gives' a semaphore every 500th time it executes.  The semaphore
+is used to synchronise with the event semaphore task, which is described next.
+
+The event semaphore task:
+The event semaphore task uses the FreeRTOS xSemaphoreTake() API function to
+wait for the semaphore that is given by the RTOS tick hook function.  The task
+increments the ulCountOfReceivedSemaphores variable each time the semaphore is
+received.  As the semaphore is given every 500ms (assuming a tick frequency of
+1KHz), the value of ulCountOfReceivedSemaphores will increase by 2 each second.
+
+The idle hook (or callback) function:
+The idle hook function queries the amount of free FreeRTOS heap space available.
+See vApplicationIdleHook().
+
+The malloc failed and stack overflow hook (or callback) functions:
+These two hook functions are provided as examples, but do not contain any
+functionality.
+*/
+
+/* Standard includes. */
+#include <stdint.h>
+#include <stdio.h>
+#include "stm32f4_discovery.h"
+
+/* Kernel includes. */
+#include "stm32f4xx.h"
+#include "../FreeRTOS_Source/include/FreeRTOS.h"
+#include "../FreeRTOS_Source/include/queue.h"
+#include "../FreeRTOS_Source/include/semphr.h"
+#include "../FreeRTOS_Source/include/task.h"
+#include "../FreeRTOS_Source/include/timers.h"
+
+
+
+/*-----------------------------------------------------------*/
+#define mainQUEUE_LENGTH 100
+
+#define amber  	0
+#define green  	1
+#define red  	2
+#define blue  	3
+
+#define amber_led	LED3
+#define green_led	LED4
+#define red_led		LED5
+#define blue_led	LED6
+
+
+/*
+ * TODO: Implement this function for any hardware specific clock configuration
+ * that was not already performed before main() was called.
+ */
+static void prvSetupHardware( void );
+
+/*
+ * The queue send and receive tasks as described in the comments at the top of
+ * this file.
+ */
+static void Traffic_Light_Controller_Task( void *pvParameters );
+static void Poll_Poteneometer();
+
+void Configure_GPIOC();
+void Configure_ADC1();
+void Configure_GPIOC_3();
+
+xQueueHandle Traffic_Light_Queue_handle = 0;
+
+ADC_InitTypeDef ADC_InitStructure;
+
+
+/*-----------------------------------------------------------*/
+
+int mainXX(void)
+{
+
+	Configure_GPIOC();
+	Configure_ADC1();
+
+	/* Configure the system ready to run the demo.  The clock configuration
+	can be done here if it was not done before main() was called. */
+	prvSetupHardware();
+
+
+	/* Create the queue used by the queue send and queue receive tasks.
+	http://www.freertos.org/a00116.html */
+	Traffic_Light_Queue_handle = xQueueCreate( 	1, sizeof( uint16_t ) ); // total items / size of each
+	//Potentiometer_Queue_handle = xQueueCreate( 1, sizeof(uint16_t) );
+
+	/* Add to the registry, for the benefit of kernel aware debugging. */
+	vQueueAddToRegistry( Traffic_Light_Queue_handle, "TrafficLightQueue" );
+
+	xTaskCreate( Traffic_Light_Controller_Task, "TrafficLight", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+	xTaskCreate( Poll_Poteneometer, "PollPotentiometer", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+
+	/* Start the tasks and timer running. */
+	vTaskStartScheduler();
+
+	return 0;
+}
+
+void Configure_ADC1(){
+	Configure_GPIOC_3();
+
+	ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
+
+	ADC_Init(ADC1,&ADC_InitStructure);
+
+	ADC_Cmd(ADC1, ENABLE);
+
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_13, 1, ADC_SampleTime_3Cycles);
+
+}
+
+//for ADC -- Gpio Init
+void Configure_GPIOC_3(){
+	GPIO_InitTypeDef  GPIO_InitStructure;
+
+	//enable clock
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
+
+	//Init GPIO
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+}
+
+void Configure_GPIOC(){
+	GPIO_InitTypeDef  GPIO_InitStructure;
+
+	//enable clock
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
+
+	//Init GPIO
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+}
+
+/*-----------------------------------------------------------*/
+static void Set_Bit_For_Seconds(GPIO_TypeDef* GPIOx, uint32_t Pin, int seconds){
+	GPIO_WriteBit(GPIOx, Pin, Bit_SET);
+
+	xQueueSend(Traffic_Light_Queue_handle, &Pin, 500);
+
+	vTaskDelay(seconds * 1000);
+	GPIO_WriteBit(GPIOC, Pin, Bit_RESET);
+}
+
+static void Traffic_Light_Controller_Task( void *pvParameters )
+{
+	while(1){
+		Set_Bit_For_Seconds(GPIOC, GPIO_Pin_0, 5);
+		Set_Bit_For_Seconds(GPIOC, GPIO_Pin_1, 1);
+		Set_Bit_For_Seconds(GPIOC, GPIO_Pin_2, 3);
+	}
+}
+
+/*-----------------------------------------------------------*/
+
+static void Poll_Poteneometer(){
+	while(1){
+
+		ADC_SoftwareStartConv(ADC1);
+
+		while(!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC)){}
+		if(ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC)){
+			int val = ADC_GetConversionValue(ADC1);
+			printf("%d\n", val);
+		}
+
+		vTaskDelay(1000);
+
+	}
+}
+
+/*-----------------------------------------------------------*/
+
+
+
+void vApplicationMallocFailedHook( void )
+{
+	/* The malloc failed hook is enabled by setting
+	configUSE_MALLOC_FAILED_HOOK to 1 in FreeRTOSConfig.h.
+
+	Called if a call to pvPortMalloc() fails because there is insufficient
+	free memory available in the FreeRTOS heap.  pvPortMalloc() is called
+	internally by FreeRTOS API functions that create tasks, queues, software 
+	timers, and semaphores.  The size of the FreeRTOS heap is set by the
+	configTOTAL_HEAP_SIZE configuration constant in FreeRTOSConfig.h. */
+	for( ;; );
+}
+/*-----------------------------------------------------------*/
+
+void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName )
+{
+	( void ) pcTaskName;
+	( void ) pxTask;
+
+	/* Run time stack overflow checking is performed if
+	configconfigCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.  This hook
+	function is called if a stack overflow is detected.  pxCurrentTCB can be
+	inspected in the debugger if the task name passed into this function is
+	corrupt. */
+	for( ;; );
+}
+/*-----------------------------------------------------------*/
+
+void vApplicationIdleHook( void )
+{
+volatile size_t xFreeStackSpace;
+
+	/* The idle task hook is enabled by setting configUSE_IDLE_HOOK to 1 in
+	FreeRTOSConfig.h.
+
+	This function is called on each cycle of the idle task.  In this case it
+	does nothing useful, other than report the amount of FreeRTOS heap that
+	remains unallocated. */
+	xFreeStackSpace = xPortGetFreeHeapSize();
+
+	if( xFreeStackSpace > 100 )
+	{
+		/* By now, the kernel has allocated everything it is going to, so
+		if there is a lot of heap remaining unallocated then
+		the value of configTOTAL_HEAP_SIZE in FreeRTOSConfig.h can be
+		reduced accordingly. */
+	}
+}
+/*-----------------------------------------------------------*/
+
+static void prvSetupHardware( void )
+{
+	/* Ensure all priority bits are assigned as preemption priority bits.
+	http://www.freertos.org/RTOS-Cortex-M3-M4.html */
+	NVIC_SetPriorityGrouping( 0 );
+
+	/* TODO: Setup the clocks, etc. here, if they were not configured before
+	main() was called. */
+}
+
