@@ -1,6 +1,9 @@
 #ifndef __DD_Task_H
 #define __DD_Task_H
 
+#include <stdint.h>
+#include "../../FreeRTOS_Source/include/task.h"
+
 typedef enum {
 	Periodic,
 	Aperiodic
