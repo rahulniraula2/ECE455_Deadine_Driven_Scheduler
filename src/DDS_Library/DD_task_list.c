@@ -1,5 +1,6 @@
 #include "DD_task_list.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 dd_task_lists* init_task_lists(void){
     dd_task_lists *task_lists = (dd_task_lists*)malloc(sizeof(dd_task_lists));
@@ -101,14 +102,16 @@ void remove_task(dd_task_list* task_list, uint32_t task_id){
         current_node = current_node->next;
     }
 
-    futs(stderr, "Task not found in active task list");
+    fputs("Task not found in active task list", stderr);
 }
 
 dd_task get_earilest_task(dd_task_list* task_list){
     dd_task_list_node *current_node = task_list->head;
 
     if(current_node == NULL){
-        return 0;
+    	dd_task d;
+    	d.task_id = -1;
+        return d;
     }else{
         return (current_node->task);
     }
@@ -117,6 +120,6 @@ dd_task get_earilest_task(dd_task_list* task_list){
 void print_task_list(dd_task_list* task_list){
     dd_task_list_node *current_node = task_list->head;
     while(current_node != NULL){
-        printf("Task ID: %d, Absolute Deadline: %d\n", current_node->task.task_id, current_node->task.absolute_deadline);
+        printf("Task ID: %lu, Absolute Deadline: %lu\n", current_node->task.task_id, current_node->task.absolute_deadline);
     }
 }

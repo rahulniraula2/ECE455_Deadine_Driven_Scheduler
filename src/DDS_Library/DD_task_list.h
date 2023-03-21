@@ -5,7 +5,7 @@
 
 typedef struct dd_task_list_node {
     dd_task task;
-    dd_task_list_node *next;
+    struct dd_task_list_node* next;
 } dd_task_list_node;
 
 typedef struct dd_task_list {
