@@ -19,6 +19,24 @@ uint32_t absolute_deadline;
 uint32_t completion_time;
 } dd_task;
 
+typedef enum dd_messages
+{
+    release_dd_task,
+    complete_dd_task,
+    get_active_dd_task_list,
+    get_completed_dd_task_list,
+    get_overdue_dd_task_list
+
+} dd_messages;
+
+typedef struct dd_message
+{
+    dd_messages message;;
+    dd_task data;
+    TaskHandle_t task_handle;
+
+} dd_message;
+
 #endif /*__DD_Task_H*/
 
 
