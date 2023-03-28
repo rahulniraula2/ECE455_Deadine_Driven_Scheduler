@@ -14,6 +14,8 @@ dd_task_lists* init_task_lists(void){
     task_lists->overdue_task_list = (dd_task_list*)malloc(sizeof(dd_task_list));
     task_lists->overdue_task_list->head = NULL;
 
+    task_lists->current_task = NULL;
+
     return task_lists;
 }
 
@@ -25,14 +27,14 @@ dd_task_list_node* init_task_list_node(dd_task task){
 }
 
 dd_task create_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, uint32_t absolute_deadline){
-    dd_task *task = (dd_task*)malloc(sizeof(dd_task));
-    task->t_handle = t_handle;
-    task->type = type;
-    task->task_id = task_id;
-    task->absolute_deadline = absolute_deadline;
-    task->release_time = -1;
-    task->completion_time = -1;
-    return *task;
+    dd_task task;
+    task.t_handle = t_handle;
+    task.type = type;
+    task.task_id = task_id;
+    task.absolute_deadline = absolute_deadline;
+    task.release_time = -1;
+    task.completion_time = -1;
+    return task;
 }
 
 void add_task_to_list_by_deadline(dd_task_list* task_list, dd_task task){

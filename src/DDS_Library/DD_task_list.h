@@ -17,9 +17,11 @@ typedef struct dd_task_lists {
     dd_task_list *active_task_list;
     dd_task_list *complete_task_list;
     dd_task_list *overdue_task_list;
+    dd_task_list_node *current_task;
 } dd_task_lists;
 
 dd_task_lists* init_task_lists(void);
+dd_task create_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, uint32_t absolute_deadline);
 
 void add_task_to_list_by_deadline(dd_task_list* task_list, dd_task task);
 void add_task_to_list(dd_task_list* task_list, dd_task task);
