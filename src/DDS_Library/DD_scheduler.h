@@ -1,7 +1,11 @@
-#ifndef __scheduler_H
-#define __scheduler_H
+#ifndef DD_scheduler_H
+#define DD_scheduler_H
 
+#include <stdio.h>
 #include "DD_task_list.h"
+#include "DD_Task.h"
+#include "../FreeRTOS_Source/include/FreeRTOS.h"
+#include "../FreeRTOS_Source/include/queue.h"
 
 void DD_scheduler_start(void);
 
