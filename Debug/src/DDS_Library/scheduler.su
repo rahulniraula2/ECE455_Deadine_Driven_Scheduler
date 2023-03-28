@@ -1,0 +1,2 @@
+scheduler.c:3:6:DD_scheduler_initialize	16	static
+scheduler.c:7:6:DD_scheduler_start	4	static

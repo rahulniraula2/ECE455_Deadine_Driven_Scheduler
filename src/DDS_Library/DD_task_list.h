@@ -26,7 +26,7 @@ dd_task create_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, 
 void add_task_to_list_by_deadline(dd_task_list* task_list, dd_task task);
 void add_task_to_list(dd_task_list* task_list, dd_task task);
 dd_task get_earilest_task(dd_task_list* task_list);
-void remove_task(dd_task_list* task_list, uint32_t task_id);
+dd_task_list_node* remove_task(dd_task_list* task_list, uint32_t task_id);
 
 void print_task_list(dd_task_list* task_list);
 

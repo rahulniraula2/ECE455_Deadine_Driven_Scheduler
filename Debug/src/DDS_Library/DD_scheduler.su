@@ -1,0 +1,4 @@
+DD_scheduler.c:4:6:DD_scheduler_initialize	8	static
+DD_scheduler.c:11:6:DD_scheduler_send_message	8	static
+DD_scheduler.c:18:6:handleOverDueTasks	64	static
+DD_scheduler.c:35:6:DD_scheduler	128	static

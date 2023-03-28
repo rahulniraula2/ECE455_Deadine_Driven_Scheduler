@@ -1,0 +1,8 @@
+DD_task_generators.c:11:9:DD_Create_vTask	72	static
+DD_task_generators.c:19:6:DD_Task_Generator_1	120	static
+DD_task_generators.c:36:6:simulateTaskFor	48	static
+DD_task_generators.c:53:6:task_1	120	static
+DD_task_generators.c:74:6:DD_Task_Generator_2	120	static
+DD_task_generators.c:96:6:task_2	120	static
+DD_task_generators.c:114:6:DD_Task_Generator_3	120	static
+DD_task_generators.c:134:6:task_3	120	static

@@ -16,6 +16,7 @@ task_type type;
 uint32_t task_id;
 uint32_t release_time;
 uint32_t absolute_deadline;
+uint32_t relative_deadline;
 uint32_t completion_time;
 } dd_task;
 

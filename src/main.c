@@ -13,7 +13,8 @@
 
 /*Custom includes*/
 #include "./DDS_Library/DD_Task.h"
-#include "./DDS_Library/scheduler.h"
+#include "./DDS_Library/DD_scheduler.h"
+#include "./DDS_Library/DD_task_generators.h"
 
 /*
  * TODO: Implement this function for any hardware specific clock configuration
@@ -24,9 +25,14 @@ static void prvSetupHardware( void );
 int main(void)
 {
 	prvSetupHardware();
+	int maxPriority = 30;
+	DD_scheduler_initialize();
+	xTaskCreate(DD_scheduler, "Scheduler_Task", 130, NULL, maxPriority-1, NULL);
+	xTaskCreate(DD_Task_Generator_1, "Generator1", 130, NULL, maxPriority-2, NULL);
+	xTaskCreate(DD_Task_Generator_2, "Generator2", 130, NULL, maxPriority-2, NULL);
+	xTaskCreate(DD_Task_Generator_3, "Generator3", 130, NULL, maxPriority-2, NULL);
 
 	vTaskStartScheduler();
-
 
 	return 0;
 }
@@ -35,7 +41,7 @@ void vApplicationMallocFailedHook( void )
 {
 	/* The malloc failed hook is enabled by setting
 	configUSE_MALLOC_FAILED_HOOK to 1 in FreeRTOSConfig.h.
-
+W
 	Called if a call to pvPortMalloc() fails because there is insufficient
 	free memory available in the FreeRTOS heap.  pvPortMalloc() is called
 	internally by FreeRTOS API functions that create tasks, queues, software 

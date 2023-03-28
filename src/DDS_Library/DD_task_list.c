@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void arrangeTaskPriorities(dd_task_list* task_list);
+
 dd_task_lists* init_task_lists(void){
     dd_task_lists *task_lists = (dd_task_lists*)malloc(sizeof(dd_task_lists));
 
@@ -33,6 +35,7 @@ dd_task create_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, 
     task.task_id = task_id;
     task.absolute_deadline = absolute_deadline;
     task.release_time = -1;
+    task.relative_deadline = -1;
     task.completion_time = -1;
     return task;
 }
@@ -48,14 +51,14 @@ void add_task_to_list_by_deadline(dd_task_list* task_list, dd_task task){
         dd_task_list_node *current_node = task_list->head;
 
         //If the front of the list needs to be replaced
-        if(current_node->task.absolute_deadline > task_node->task.absolute_deadline){
+        if(current_node->task.relative_deadline > task_node->task.relative_deadline){
             task_node->next = current_node;
             task_list->head = task_node;
             return;
         }
 
         // add to the list based on the absolute deadline
-        while(current_node->next != NULL && current_node->next->task.absolute_deadline < task_node->task.absolute_deadline){
+        while(current_node->next != NULL && current_node->next->task.relative_deadline < task_node->task.relative_deadline){
             current_node = current_node->next;
         }
 
@@ -67,6 +70,17 @@ void add_task_to_list_by_deadline(dd_task_list* task_list, dd_task task){
         }
 
     }
+    arrangeTaskPriorities(task_list);
+}
+
+void arrangeTaskPriorities(dd_task_list* task_list){
+	dd_task_list_node* current = task_list->head;
+	int taskPriority = 20;
+	while(current != NULL){
+		vTaskPrioritySet(current->task.t_handle, taskPriority);
+		current = current->next;
+		taskPriority--;
+	}
 }
 
 void add_task_to_list(dd_task_list* task_list, dd_task task){
@@ -84,22 +98,20 @@ void add_task_to_list(dd_task_list* task_list, dd_task task){
     }
 }
 
-void remove_task(dd_task_list* task_list, uint32_t task_id){
+dd_task_list_node* remove_task(dd_task_list* task_list, uint32_t task_id){
 
     dd_task_list_node *current_node = task_list->head;
 
     if(current_node->task.task_id == task_id){
         task_list->head = current_node->next;
-        free(current_node);
-        return;
+        return current_node;
     }
 
     while(current_node->next != NULL){
         if(current_node->next->task.task_id == task_id){
             dd_task_list_node *temp = current_node->next;
             current_node->next = current_node->next->next;
-            free(temp);
-            return;
+            return temp;
         }
         current_node = current_node->next;
     }
