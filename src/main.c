@@ -15,6 +15,7 @@
 #include "./DDS_Library/DD_Task.h"
 #include "./DDS_Library/DD_scheduler.h"
 #include "./DDS_Library/DD_task_generators.h"
+#include "./DDS_Library/DD_monitor.h"
 
 /*
  * TODO: Implement this function for any hardware specific clock configuration
@@ -28,9 +29,10 @@ int main(void)
 	int maxPriority = 30;
 	DD_scheduler_initialize();
 	xTaskCreate(DD_scheduler, "Scheduler_Task", 130, NULL, maxPriority-1, NULL);
-	xTaskCreate(DD_Task_Generator_1, "Generator1", 130, NULL, maxPriority-2, NULL);
-	xTaskCreate(DD_Task_Generator_2, "Generator2", 130, NULL, maxPriority-2, NULL);
-	xTaskCreate(DD_Task_Generator_3, "Generator3", 130, NULL, maxPriority-2, NULL);
+	xTaskCreate(DD_Task_Generator_1, "Generator1", 130, NULL, maxPriority-3, NULL);
+	xTaskCreate(DD_Task_Generator_2, "Generator2", 130, NULL, maxPriority-3, NULL);
+	xTaskCreate(DD_Task_Generator_3, "Generator3", 130, NULL, maxPriority-3, NULL);
+	xTaskCreate(DD_monitor, "Monitor", 130, NULL, maxPriority-2, NULL);
 
 	vTaskStartScheduler();
 

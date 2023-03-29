@@ -1,12 +1,12 @@
 #include "DD_task_generators.h"
 
-#define execution_time_task_1 200
-#define execution_time_task_2 200
-#define execution_time_task_3 200
+#define execution_time_task_1 95
+#define execution_time_task_2 150
+#define execution_time_task_3 250
 
 #define period_1 500
 #define period_2 500
-#define period_3 500
+#define period_3 750
 
 dd_task DD_Create_vTask(TaskHandle_t *task_handle, TaskFunction_t task_function, char *task_name, uint32_t stack_size, void *pvParameters, UBaseType_t uxPriority, int task_id, int deadline){
     int task_id_computed = task_id;
@@ -42,7 +42,7 @@ void simulateTaskFor(int timeInMS){
 
 	while (doneTime < totalTicks){
 
-		for(int i=0;i<10000;i++){
+		for(int i=0;i<100;i++){
 			int c = a+b;
 		}
 

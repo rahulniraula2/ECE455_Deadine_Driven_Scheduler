@@ -2,8 +2,8 @@ DD_task_list.c:7:16:init_task_lists	16	static
 DD_task_list.c:24:20:init_task_list_node	24	static
 DD_task_list.c:31:9:create_dd_task	64	static
 DD_task_list.c:43:6:add_task_to_list_by_deadline	48	static
-DD_task_list.c:76:6:arrangeTaskPriorities	24	static
-DD_task_list.c:86:6:add_task_to_list	48	static
-DD_task_list.c:101:20:remove_task	24	static
-DD_task_list.c:122:9:get_earilest_task	56	static
-DD_task_list.c:134:6:print_task_list	24	static
+DD_task_list.c:77:6:arrangeTaskPriorities	24	static
+DD_task_list.c:87:6:add_task_to_list	48	static
+DD_task_list.c:102:20:remove_task	24	static
+DD_task_list.c:123:9:get_earilest_task	56	static
+DD_task_list.c:135:6:print_task_list	24	static

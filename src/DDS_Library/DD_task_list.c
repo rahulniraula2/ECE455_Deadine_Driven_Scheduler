@@ -54,6 +54,7 @@ void add_task_to_list_by_deadline(dd_task_list* task_list, dd_task task){
         if(current_node->task.relative_deadline > task_node->task.relative_deadline){
             task_node->next = current_node;
             task_list->head = task_node;
+            arrangeTaskPriorities(task_list);
             return;
         }
 
@@ -133,7 +134,18 @@ dd_task get_earilest_task(dd_task_list* task_list){
 
 void print_task_list(dd_task_list* task_list){
     dd_task_list_node *current_node = task_list->head;
+    int count = 0;
     while(current_node != NULL){
-        printf("Task ID: %lu, Absolute Deadline: %lu\n", current_node->task.task_id, current_node->task.absolute_deadline);
+        count++;
+        current_node = current_node->next;
     }
+    printf("Total Count %d\n", count);
+
+    current_node = task_list->head;
+
+    while(current_node != NULL){
+    	printf("Task ID: %d, Deadline: %d, completion_time: %d\n", (int)current_node->task.task_id, (int)(current_node->task.release_time + current_node->task.absolute_deadline),(int)(current_node->task.release_time + current_node->task.completion_time));
+    	current_node = current_node->next;
+    }
+
 }
